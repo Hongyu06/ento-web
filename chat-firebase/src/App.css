@@ -36,3 +36,52 @@
     transform: rotate(360deg);
   }
 }
+
+/* src/index.css o App.css */
+body.dark-mode {
+  background-color: #121212;
+  color: #f1f1f1;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Enlaces y formularios se adaptan también */
+a {
+  transition: color 0.3s;
+}
+
+.dark-mode a {
+  color: #90caf9;
+}
+
+input, button, textarea {
+  transition: background-color 0.3s, color 0.3s;
+}
+
+body.dark-mode input,
+body.dark-mode textarea {
+  background-color: #1e1e1e;
+  color: #f1f1f1;
+  border: 1px solid #333;
+}
+
+body.dark-mode button {
+  background-color: #333;
+  color: #f1f1f1;
+  border: 1px solid #444;
+}
+
+body.dark-mode {
+  background-color: #121212;
+  color: #f1f1f1;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  transition: background-color 0.3s, color 0.3s;
+}

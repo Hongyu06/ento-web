@@ -1,66 +1,68 @@
-import { useState, useEffect } from "react";
-import { db } from "./firebase";
-import {
-  collection,
-  addDoc,
-  serverTimestamp,
-  onSnapshot,
-  query,
-  orderBy,
-} from "firebase/firestore";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useEffect, useContext } from "react";
+import { UserProvider, UserContext } from "./context/UserContext";
 
-function App() {
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState("");
+// Páginas
+import Home from "./pages/Home";
+import ChatPage from "./pages/ChatPage";
+import LoginPage from "./pages/LoginPage";
+import SettingsPage from "./pages/SettingsPage";
+import UsersPage from "./pages/UsersPage";
+import PrivateChatPage from "./pages/PrivateChatPage";
 
+// Componentes
+import Navbar from "./components/Navbar";
+
+function PrivateRoute({ children }) {
+  const { user } = useContext(UserContext);
+  return user ? children : <Navigate to="/login" />;
+}
+
+function AppContent() {
+  const { darkMode } = useContext(UserContext);
+
+  // Aplica clase de modo oscuro al body
   useEffect(() => {
-    const q = query(collection(db, "messages"), orderBy("timestamp"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setMessages(snapshot.docs.map((doc) => doc.data()));
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  const sendMessage = async (e) => {
-    e.preventDefault();
-    if (input.trim() === "") return;
-
-    await addDoc(collection(db, "messages"), {
-      text: input,
-      timestamp: serverTimestamp(),
-    });
-
-    setInput("");
-  };
+    document.body.className = darkMode ? "dark-mode" : "";
+  }, [darkMode]);
 
   return (
-    <div style={{ padding: "2rem", maxWidth: 500, margin: "auto" }}>
-      <h1>💬 Chat en Tiempo Real</h1>
-      <div style={{
-        height: "300px",
-        overflowY: "auto",
-        border: "1px solid #ccc",
-        padding: "1rem",
-        marginBottom: "1rem"
-      }}>
-        {messages.map((msg, index) => (
-          <div key={index} style={{ marginBottom: "0.5rem" }}>{msg.text}</div>
-        ))}
-      </div>
-
-      <form onSubmit={sendMessage}>
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Escribe tu mensaje..."
-          style={{ width: "70%", padding: "0.5rem" }}
+    <>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/chat"
+          element={
+            <PrivateRoute>
+              <ChatPage />
+            </PrivateRoute>
+          }
         />
-        <button type="submit" style={{ padding: "0.5rem" }}>Enviar</button>
-      </form>
-    </div>
+        <Route path="/users" element={<PrivateRoute><UsersPage /></PrivateRoute>} />
+        <Route path="/chat/:toUser" element={<PrivateRoute><PrivateChatPage /></PrivateRoute>} />
+        <Route
+          path="/settings"
+          element={
+            <PrivateRoute>
+              <SettingsPage />
+            </PrivateRoute>
+          }
+        />
+        {/* Ruta 404 */}
+        <Route path="*" element={<h1 style={{ padding: "2rem" }}>404 - Página no encontrada</h1>} />
+      </Routes>
+    </>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <UserProvider>
+      <BrowserRouter>
+        <AppContent />
+      </BrowserRouter>
+    </UserProvider>
+  );
+}
